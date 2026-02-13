@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt 提示詞管理系統 v3</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: #f0f2f5; color: #333; }
+  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+  .header h1 { font-size: 24px; margin-bottom: 5px; }
+  .header p { font-size: 14px; opacity: 0.9; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .analyze-box { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .analyze-box h2 { font-size: 18px; margin-bottom: 15px; color: #4a5568; }
+  .analyze-box textarea { width: 100%; height: 180px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; font-family: inherit; }
+  .analyze-box textarea:focus { border-color: #667eea; outline: none; }
+  .analyze-box input[type="text"] { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 10px; }
+  .analyze-box input[type="text"]:focus { border-color: #667eea; outline: none; }
+  .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-success { background: #48bb78; color: white; }
+  .btn-success:hover { background: #38a169; }
+  .btn-danger { background: #fc8181; color: white; font-size: 12px; padding: 5px 12px; }
+  .btn-danger:hover { background: #f56565; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; }
+  .btn-outline:hover { background: #667eea; color: white; }
+  .btn-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .ai-results { margin-top: 20px; }
+  .ai-result-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .ai-result-card h4 { color: #2d3748; margin-bottom: 8px; }
+  .ai-result-card pre { background: #edf2f7; padding: 10px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; font-size: 13px; margin-bottom: 8px; max-height: 200px; overflow-y: auto; }
+  .ai-result-card .meta { font-size: 12px; color: #718096; }
+  .ai-result-card .meta span { background: #e2e8f0; padding: 2px 8px; border-radius: 10px; margin-right: 5px; display: inline-block; margin-bottom: 4px; }
+  .filter-bar { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .filter-bar input { flex: 1; min-width: 200px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .filter-bar select { border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; background: white; }
+  .prompt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .prompt-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s; }
+  .prompt-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+  .prompt-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .prompt-card .card-title { font-size: 16px; font-weight: 600; color: #2d3748; flex: 1; }
+  .prompt-card .card-category { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
+  .prompt-card .card-content { background: #f7fafc; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+  .prompt-card .card-tags span { background: #edf2f7; color: #4a5568; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px; }
+  .prompt-card .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #edf2f7; }
+  .prompt-card .card-source { font-size: 11px; color: #a0aec0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prompt-card .card-actions { display: flex; gap: 6px; }
+  .prompt-card .card-actions button { background: none; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .prompt-card .card-actions button:hover { background: #edf2f7; }
+  .stats { text-align: center; color: #a0aec0; padding: 20px; font-size: 14px; }
+  .status-msg { padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 14px; }
+  .status-msg.info { background: #ebf8ff; color: #2b6cb0; }
+  .status-msg.success { background: #f0fff4; color: #276749; }
+  .status-msg.error { background: #fff5f5; color: #c53030; }
+  .status-msg.loading { background: #fefcbf; color: #975a16; }
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+  .modal h3 { margin-bottom: 16px; color: #2d3748; }
+  .modal label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; margin-top: 12px; color: #4a5568; }
+  .modal input, .modal textarea, .modal select { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+  .modal textarea { height: 100px; resize: vertical; }
+  .modal .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .tools-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  @media (max-width: 600px) {
+    .prompt-grid { grid-template-columns: 1fr; }
+    .filter-bar { flex-direction: column; }
+    .btn-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 Prompt 提示詞管理系統 v3</h1>
+  <p>Supabase 雲端版 — 任何裝置、任何地方都能用</p>
+</div>
+
+<div class="container">
+  <div class="analyze-box">
+    <h2>🤖 貼上文章內容，AI 自動擷取提示詞</h2>
+    <input type="text" id="articleTitle" placeholder="文章標題（選填）">
+    <input type="text" id="articleSource" placeholder="來源網址（選填），例如 https://www.koc.com.tw/archives/630020">
+    <textarea id="articleContent" placeholder="把文章內容貼在這裡...&#10;&#10;步驟：&#10;1. 打開文章網頁&#10;2. Ctrl+A 全選文字&#10;3. Ctrl+C 複製&#10;4. 在這裡 Ctrl+V 貼上&#10;5. 按下「AI 分析提示詞」按鈕"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnAnalyze" onclick="analyzeWithAI()">🤖 AI 分析提示詞</button>
+      <button class="btn btn-outline" onclick="openAddModal()">✏️ 手動新增</button>
+    </div>
+    <div id="statusMsg"></div>
+    <div id="aiResults" class="ai-results"></div>
+  </div>
+
+  <div class="tools-bar">
+    <button class="btn btn-sm btn-outline" onclick="exportJSON()">📤 匯出 JSON</button>
+    <button class="btn btn-sm btn-outline" onclick="document.getElementById('importFile').click()">📥 匯入 JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn btn-sm btn-outline" onclick="exportCSV()">📊 匯出 CSV</button>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 搜尋標題、內容、標籤..." oninput="renderPrompts()">
+    <select id="categoryFilter" onchange="renderPrompts()">
+      <option value="">全部分類</option>
+      <option value="寫作">寫作</option>
+      <option value="程式開發">程式開發</option>
+      <option value="行銷">行銷</option>
+      <option value="分析">分析</option>
+      <option value="教育">教育</option>
+      <option value="翻譯">翻譯</option>
+      <option value="創意">創意</option>
+      <option value="商業">商業</option>
+      <option value="生活">生活</option>
+      <option value="簡報">簡報</option>
+      <option value="角色扮演">角色扮演</option>
+      <option value="其他">其他</option>
+    </select>
+  </div>
+
+  <div id="promptGrid" class="prompt-grid"></div>
+  <div id="stats" class="stats"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modalTitle">新增提示詞</h3>
+    <input type="hidden" id="editId">
+    <label>標題 *</label>
+    <input type="text" id="formTitle" placeholder="提示詞名稱">
+    <label>內容 *</label>
+    <textarea id="formContent" placeholder="提示詞內容"></textarea>
+    <label>分類</label>
+    <select id="formCategory">
+      <option value="其他">其他</option>
+      <option value="寫作">寫作</option>
+      <option value="程式開發">程式開發</option>
+      <option value="行銷">行銷</option>
+      <option value="分析">分析</option>
+      <option value="教育">教育</option>
+      <option value="翻譯">翻譯</option>
+      <option value="創意">創意</option>
+      <option value="商業">商業</option>
+      <option value="生活">生活</option>
+      <option value="簡報">簡報</option>
+      <option value="角色扮演">角色扮演</option>
+    </select>
+    <label>標籤（用逗號分隔）</label>
+    <input type="text" id="formTags" placeholder="例如：NotebookLM, 簡報, AI">
+    <label>來源網址</label>
+    <input type="text" id="formSource" placeholder="https://...">
+    <label>備註</label>
+    <textarea id="formNotes" style="height:60px" placeholder="備註..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="savePrompt()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ⚠️ 請把下面三行換成你自己的金鑰
+// ============================================================
+const SUPABASE_URL = 'https://xuxkvlpjzqwgcqxbknsw.supabase.co';        // 例如 https://abcdefgh.supabase.co
+const SUPABASE_KEY = 'sb_publishable_OqLTc65lo0kXjjz6Kw186w_hJzbUrOv';    // 你的 anon key
+var CLAUDE_API_KEY = localStorage.getItem('claude_api_key') || '';
+	
+// 初始化 Supabase（用 db 避免與 CDN 的 window.supabase 衝突）
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+var allPrompts = [];
+
+window.addEventListener('DOMContentLoaded', async function() {
+  await loadPrompts();
+});
+
+async function loadPrompts() {
+  var result = await db.from('prompts').select('*').order('created_at', { ascending: false });
+  if (result.error) {
+    showStatus('載入資料失敗：' + result.error.message, 'error');
+    return;
+  }
+  allPrompts = result.data || [];
+  renderPrompts();
+}
+
+function renderPrompts() {
+  var keyword = document.getElementById('searchInput').value.toLowerCase();
+  var catFilter = document.getElementById('categoryFilter').value;
+  var filtered = allPrompts.filter(function(p) {
+    var matchKeyword = !keyword ||
+      (p.title && p.title.toLowerCase().indexOf(keyword) >= 0) ||
+      (p.content && p.content.toLowerCase().indexOf(keyword) >= 0) ||
+      (p.tags && p.tags.some(function(t) { return t.toLowerCase().indexOf(keyword) >= 0; })) ||
+      (p.notes && p.notes.toLowerCase().indexOf(keyword) >= 0);
+    var matchCat = !catFilter || p.category === catFilter;
+    return matchKeyword && matchCat;
+  });
+  var grid = document.getElementById('promptGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="stats">沒有找到符合條件的提示詞</div>';
+    document.getElementById('stats').textContent = '共 ' + allPrompts.length + ' 條提示詞';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var p = filtered[i];
+    var tagsHtml = '';
+    if (p.tags) { for (var j = 0; j < p.tags.length; j++) { tagsHtml += '<span>' + escHtml(p.tags[j]) + '</span>'; } }
+    html += '<div class="prompt-card">' +
+      '<div class="card-header">' +
+        '<div class="card-title">' + escHtml(p.title) + '</div>' +
+        '<div class="card-category">' + escHtml(p.category || '其他') + '</div>' +
+      '</div>' +
+      '<div class="card-content">' + escHtml(p.content) + '</div>' +
+      '<div class="card-tags">' + tagsHtml + '</div>' +
+      '<div class="card-footer">' +
+        '<div class="card-source" title="' + escHtml(p.source || '') + '">' + (p.source ? '🔗 ' + escHtml(p.source) : '') + '</div>' +
+        '<div class="card-actions">' +
+          '<button onclick="copyContent(' + p.id + ')" title="複製">📋</button>' +
+          '<button onclick="openEditModal(' + p.id + ')" title="編輯">✏️</button>' +
+          '<button onclick="deletePrompt(' + p.id + ')" title="刪除">🗑️</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+  document.getElementById('stats').textContent = '顯示 ' + filtered.length + ' / 共 ' + allPrompts.length + ' 條提示詞';
+}
+
+async function analyzeWithAI() {
+  var content = document.getElementById('articleContent').value.trim();
+  var title = document.getElementById('articleTitle').value.trim();
+  var source = document.getElementById('articleSource').value.trim();
+  if (!content) { showStatus('請先貼上文章內容！', 'error'); return; }
+  if (content.length < 50) { showStatus('文章內容太短，至少需要 50 個字', 'error'); return; }
+  if (!CLAUDE_API_KEY) {
+    var key = prompt('請輸入你的 Claude API Key（sk-ant-api03-...）：');
+    if (!key) return;
+    CLAUDE_API_KEY = key.trim();
+    localStorage.setItem('claude_api_key', CLAUDE_API_KEY);
+  }
+  var btn = document.getElementById('btnAnalyze');
+  btn.disabled = true;
+  btn.textContent = '⏳ AI 分析中...';
+  showStatus('正在呼叫 AI 分析文章中的提示詞，請稍候約 10-20 秒...', 'loading');
+  try {
+    var textToAnalyze = content.substring(0, 8000);
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: '請分析以下文章，找出所有「提示詞（Prompt）」。\n\n規則：\n1. 只提取文章中明確的提示詞/指令，不要提取作者的說明文字\n2. 每個提示詞保留原文，不要改寫\n3. 為每個提示詞分配分類：寫作/程式開發/行銷/分析/教育/翻譯/創意/商業/生活/簡報/角色扮演/其他\n4. 為每個提示詞產生 2-4 個標籤\n5. 如果文章中沒有提示詞，回傳空陣列\n\n請用 JSON 格式回覆，不要有其他文字：\n{"prompts":[{"title":"提示詞名稱","content":"完整提示詞內容","category":"分類","tags":["標籤1","標籤2"]}]}\n\n文章內容：\n' + textToAnalyze
+        }]
+      })
+    });
+    if (!response.ok) {
+      var errData = {};
+      try { errData = await response.json(); } catch(e) {}
+      throw new Error('API 錯誤 ' + response.status + ': ' + (errData.error ? errData.error.message : response.statusText));
+    }
+    var data = await response.json();
+    var aiText = data.content[0].text;
+    var parsed;
+    try {
+      var jsonMatch = aiText.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : aiText);
+    } catch (e) {
+      throw new Error('AI 回傳格式無法解析');
+    }
+    var prompts = parsed.prompts || [];
+    if (prompts.length === 0) {
+      showStatus('AI 沒有在文章中找到明確的提示詞。你可以用「手動新增」來自己輸入。', 'info');
+      document.getElementById('aiResults').innerHTML = '';
+      return;
+    }
+    showStatus('✅ AI 找到 ' + prompts.length + ' 個提示詞，請勾選後儲存：', 'success');
+    var resultsHtml = '';
+    for (var i = 0; i < prompts.length; i++) {
+      var p = prompts[i];
+      var tagsMeta = '';
+      if (p.tags) { for (var j = 0; j < p.tags.length; j++) { tagsMeta += '<span>🏷️ ' + escHtml(p.tags[j]) + '</span>'; } }
+      resultsHtml += '<div class="ai-result-card">' +
+        '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">' +
+          '<input type="checkbox" checked data-index="' + i + '" style="margin-top:4px;transform:scale(1.3)">' +
+          '<div style="flex:1">' +
+            '<h4>' + escHtml(p.title) + '</h4>' +
+            '<pre>' + escHtml(p.content) + '</pre>' +
+            '<div class="meta"><span>📂 ' + escHtml(p.category) + '</span>' + tagsMeta + '</div>' +
+          '</div>' +
+        '</label>' +
+      '</div>';
+    }
+    resultsHtml += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-success" onclick="saveAIResults()">💾 儲存勾選的提示詞</button></div>';
+    document.getElementById('aiResults').innerHTML = resultsHtml;
+    window._aiPrompts = [];
+    for (var i = 0; i < prompts.length; i++) {
+      window._aiPrompts.push({
+        title: prompts[i].title,
+        content: prompts[i].content,
+        category: prompts[i].category,
+        tags: prompts[i].tags,
+        source: source,
+        notes: title ? '來自文章：' + title : ''
+      });
+    }
+  } catch (err) {
+    showStatus('分析失敗：' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 AI 分析提示詞';
+  }
+}
+
+async function saveAIResults() {
+  if (!window._aiPrompts) return;
+  var checkboxes = document.querySelectorAll('#aiResults input[type="checkbox"]');
+  var selected = [];
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      selected.push(window._aiPrompts[parseInt(checkboxes[i].dataset.index)]);
+    }
+  }
+  if (selected.length === 0) { showStatus('請至少勾選一個提示詞', 'error'); return; }
+  showStatus('正在儲存 ' + selected.length + ' 個提示詞...', 'loading');
+  var rows = [];
+  for (var i = 0; i < selected.length; i++) {
+    rows.push({
+      title: selected[i].title,
+      content: selected[i].content,
+      category: selected[i].category || '其他',
+      tags: selected[i].tags || [],
+      source: selected[i].source || '',
+      notes: selected[i].notes || ''
+    });
+  }
+  var result = await db.from('prompts').insert(rows);
+  if (result.error) {
+    showStatus('儲存失敗：' + result.error.message, 'error');
+    return;
+  }
+  showStatus('✅ 成功儲存 ' + selected.length + ' 個提示詞！', 'success');
+  document.getElementById('aiResults').innerHTML = '';
+  document.getElementById('articleContent').value = '';
+  document.getElementById('articleTitle').value = '';
+  window._aiPrompts = null;
+  await loadPrompts();
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '新增提示詞';
+  document.getElementById('editId').value = '';
+  document.getElementById('formTitle').value = '';
+  document.getElementById('formContent').value = '';
+  document.getElementById('formCategory').value = '其他';
+  document.getElementById('formTags').value = '';
+  document.getElementById('formSource').value = '';
+  document.getElementById('formNotes').value = '';
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function openEditModal(id) {
+  var p = null;
+  for (var i = 0; i < allPrompts.length; i++) { if (allPrompts[i].id === id) { p = allPrompts[i]; break; } }
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = '編輯提示詞';
+  document.getElementById('editId').value = id;
+  document.getElementById('formTitle').value = p.title;
+  document.getElementById('formContent').value = p.content;
+  document.getElementById('formCategory').value = p.category || '其他';
+  document.getElementById('formTags').value = (p.tags || []).join(', ');
+  document.getElementById('formSource').value = p.source || '';
+  document.getElementById('formNotes').value = p.notes || '';
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+async function savePrompt() {
+  var title = document.getElementById('formTitle').value.trim();
+  var content = document.getElementById('formContent').value.trim();
+  if (!title || !content) { alert('標題和內容為必填'); return; }
+  var tagsRaw = document.getElementById('formTags').value.split(',');
+  var tags = [];
+  for (var i = 0; i < tagsRaw.length; i++) { var t = tagsRaw[i].trim(); if (t) tags.push(t); }
+  var row = {
+    title: title,
+    content: content,
+    category: document.getElementById('formCategory').value,
+    tags: tags,
+    source: document.getElementById('formSource').value.trim(),
+    notes: document.getElementById('formNotes').value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  var editId = document.getElementById('editId').value;
+  if (editId) {
+    var result = await db.from('prompts').update(row).eq('id', parseInt(editId));
+    if (result.error) { alert('更新失敗：' + result.error.message); return; }
+  } else {
+    var result = await db.from('prompts').insert(row);
+    if (result.error) { alert('新增失敗：' + result.error.message); return; }
+  }
+  closeModal();
+  await loadPrompts();
+}
+
+async function deletePrompt(id) {
+  if (!confirm('確定要刪除這條提示詞嗎？')) return;
+  var result = await db.from('prompts').delete().eq('id', id);
+  if (result.error) { alert('刪除失敗：' + result.error.message); return; }
+  await loadPrompts();
+}
+
+function copyContent(id) {
+  var p = null;
+  for (var i = 0; i < allPrompts.length; i++) { if (allPrompts[i].id === id) { p = allPrompts[i]; break; } }
+  if (!p) return;
+  navigator.clipboard.writeText(p.content).then(function() {
+    showStatus('✅ 已複製到剪貼簿！', 'success');
+    setTimeout(function() { document.getElementById('statusMsg').innerHTML = ''; }, 2000);
+  });
+}
+
+function exportJSON() {
+  var blob = new Blob([JSON.stringify(allPrompts, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'prompts-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importJSON(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  try {
+    var text = await file.text();
+    var imported = JSON.parse(text);
+    if (!Array.isArray(imported)) throw new Error('格式不正確');
+    var rows = [];
+    for (var i = 0; i < imported.length; i++) {
+      rows.push({
+        title: imported[i].title || '未命名',
+        content: imported[i].content || '',
+        category: imported[i].category || '其他',
+        tags: Array.isArray(imported[i].tags) ? imported[i].tags : [],
+        source: imported[i].source || '',
+        notes: imported[i].notes || ''
+      });
+    }
+    var result = await db.from('prompts').insert(rows);
+    if (result.error) throw result.error;
+    showStatus('✅ 成功匯入 ' + rows.length + ' 條提示詞！', 'success');
+    await loadPrompts();
+  } catch (err) {
+    showStatus('匯入失敗：' + err.message, 'error');
+  }
+  event.target.value = '';
+}
+
+function exportCSV() {
+  var header = '標題,內容,分類,標籤,來源,備註,建立時間\n';
+  var rows = '';
+  for (var i = 0; i < allPrompts.length; i++) {
+    var p = allPrompts[i];
+    rows += '"' + csvEsc(p.title) + '","' + csvEsc(p.content) + '","' + csvEsc(p.category) + '","' + csvEsc((p.tags||[]).join('|')) + '","' + csvEsc(p.source) + '","' + csvEsc(p.notes) + '","' + p.created_at + '"\n';
+  }
+  var bom = '\uFEFF';
+  var blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'prompts-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function csvEsc(str) { return (str || '').replace(/"/g, '""'); }
+function showStatus(msg, type) {
+  document.getElementById('statusMsg').innerHTML = '<div class="status-msg ' + type + '">' + msg + '</div>';
+}
+</script>
+</body>
+</html>
