@@ -18,14 +18,15 @@
   .analyze-box textarea:focus { border-color: #667eea; outline: none; }
   .analyze-box input[type="text"] { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 10px; }
   .analyze-box input[type="text"]:focus { border-color: #667eea; outline: none; }
+  .analyze-box select { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 10px; background: white; }
+  .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .form-row select { flex: 1; }
   .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
   .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
   .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
   .btn-success { background: #48bb78; color: white; }
   .btn-success:hover { background: #38a169; }
-  .btn-danger { background: #fc8181; color: white; font-size: 12px; padding: 5px 12px; }
-  .btn-danger:hover { background: #f56565; }
   .btn-sm { padding: 6px 14px; font-size: 13px; }
   .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; }
   .btn-outline:hover { background: #667eea; color: white; }
@@ -36,15 +37,18 @@
   .ai-result-card pre { background: #edf2f7; padding: 10px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; font-size: 13px; margin-bottom: 8px; max-height: 200px; overflow-y: auto; }
   .ai-result-card .meta { font-size: 12px; color: #718096; }
   .ai-result-card .meta span { background: #e2e8f0; padding: 2px 8px; border-radius: 10px; margin-right: 5px; display: inline-block; margin-bottom: 4px; }
+  .ai-result-card .meta .tool-badge { background: #ebf4ff; color: #3182ce; border: 1px solid #90cdf4; }
   .filter-bar { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
   .filter-bar input { flex: 1; min-width: 200px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
   .filter-bar select { border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; background: white; }
   .prompt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
   .prompt-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s; }
   .prompt-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
-  .prompt-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .prompt-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
   .prompt-card .card-title { font-size: 16px; font-weight: 600; color: #2d3748; flex: 1; }
+  .prompt-card .card-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .prompt-card .card-category { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
+  .prompt-card .card-tool { background: #ebf4ff; color: #2b6cb0; padding: 3px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap; border: 1px solid #90cdf4; }
   .prompt-card .card-content { background: #f7fafc; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
   .prompt-card .card-tags span { background: #edf2f7; color: #4a5568; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px; }
   .prompt-card .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #edf2f7; }
@@ -66,11 +70,14 @@
   .modal input, .modal textarea, .modal select { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
   .modal textarea { height: 100px; resize: vertical; }
   .modal .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
-  .tools-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tools-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .tools-bar .settings-btn { margin-left: auto; background: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .tools-bar .settings-btn:hover { background: #e2e8f0; }
   @media (max-width: 600px) {
     .prompt-grid { grid-template-columns: 1fr; }
     .filter-bar { flex-direction: column; }
     .btn-row { flex-direction: column; }
+    .form-row { flex-direction: column; }
   }
 </style>
 </head>
@@ -86,6 +93,40 @@
     <h2>🤖 貼上文章內容，AI 自動擷取提示詞</h2>
     <input type="text" id="articleTitle" placeholder="文章標題（選填）">
     <input type="text" id="articleSource" placeholder="來源網址（選填），例如 https://www.koc.com.tw/archives/630020">
+    <div class="form-row">
+      <select id="articleTool">
+        <option value="">-- 選擇 AI 工具 --</option>
+        <option value="Gemini">Gemini</option>
+        <option value="Claude">Claude</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="NotebookLM">NotebookLM</option>
+        <option value="Copilot">Copilot</option>
+        <option value="Perplexity">Perplexity</option>
+        <option value="Grok">Grok</option>
+        <option value="Midjourney">Midjourney</option>
+        <option value="Stable Diffusion">Stable Diffusion</option>
+        <option value="Cursor">Cursor</option>
+        <option value="自動化">自動化</option>
+        <option value="程式開發">程式開發</option>
+        <option value="其他">其他</option>
+      </select>
+      <select id="articleCategory">
+        <option value="">-- 選擇用途分類 --</option>
+        <option value="寫作">寫作</option>
+        <option value="程式開發">程式開發</option>
+        <option value="行銷">行銷</option>
+        <option value="分析">分析</option>
+        <option value="教育">教育</option>
+        <option value="翻譯">翻譯</option>
+        <option value="創意">創意</option>
+        <option value="商業">商業</option>
+        <option value="生活">生活</option>
+        <option value="簡報">簡報</option>
+        <option value="角色扮演">角色扮演</option>
+        <option value="自動化">自動化</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
     <textarea id="articleContent" placeholder="把文章內容貼在這裡...&#10;&#10;步驟：&#10;1. 打開文章網頁&#10;2. Ctrl+A 全選文字&#10;3. Ctrl+C 複製&#10;4. 在這裡 Ctrl+V 貼上&#10;5. 按下「AI 分析提示詞」按鈕"></textarea>
     <div class="btn-row">
       <button class="btn btn-primary" id="btnAnalyze" onclick="analyzeWithAI()">🤖 AI 分析提示詞</button>
@@ -100,10 +141,26 @@
     <button class="btn btn-sm btn-outline" onclick="document.getElementById('importFile').click()">📥 匯入 JSON</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn btn-sm btn-outline" onclick="exportCSV()">📊 匯出 CSV</button>
+    <button class="settings-btn" onclick="resetApiKey()">🔑 重設 API Key</button>
   </div>
 
   <div class="filter-bar">
     <input type="text" id="searchInput" placeholder="🔍 搜尋標題、內容、標籤..." oninput="renderPrompts()">
+    <select id="toolFilter" onchange="renderPrompts()">
+      <option value="">全部工具</option>
+      <option value="Gemini">Gemini</option>
+      <option value="Claude">Claude</option>
+      <option value="ChatGPT">ChatGPT</option>
+      <option value="NotebookLM">NotebookLM</option>
+      <option value="Copilot">Copilot</option>
+      <option value="Perplexity">Perplexity</option>
+      <option value="Grok">Grok</option>
+      <option value="Midjourney">Midjourney</option>
+      <option value="Stable Diffusion">Stable Diffusion</option>
+      <option value="Cursor">Cursor</option>
+      <option value="自動化">自動化</option>
+      <option value="程式開發">程式開發</option>
+    </select>
     <select id="categoryFilter" onchange="renderPrompts()">
       <option value="">全部分類</option>
       <option value="寫作">寫作</option>
@@ -117,6 +174,7 @@
       <option value="生活">生活</option>
       <option value="簡報">簡報</option>
       <option value="角色扮演">角色扮演</option>
+      <option value="自動化">自動化</option>
       <option value="其他">其他</option>
     </select>
   </div>
@@ -133,7 +191,24 @@
     <input type="text" id="formTitle" placeholder="提示詞名稱">
     <label>內容 *</label>
     <textarea id="formContent" placeholder="提示詞內容"></textarea>
-    <label>分類</label>
+    <label>AI 工具</label>
+    <select id="formTool">
+      <option value="">-- 選擇 AI 工具 --</option>
+      <option value="Gemini">Gemini</option>
+      <option value="Claude">Claude</option>
+      <option value="ChatGPT">ChatGPT</option>
+      <option value="NotebookLM">NotebookLM</option>
+      <option value="Copilot">Copilot</option>
+      <option value="Perplexity">Perplexity</option>
+      <option value="Grok">Grok</option>
+      <option value="Midjourney">Midjourney</option>
+      <option value="Stable Diffusion">Stable Diffusion</option>
+      <option value="Cursor">Cursor</option>
+      <option value="自動化">自動化</option>
+      <option value="程式開發">程式開發</option>
+      <option value="其他">其他</option>
+    </select>
+    <label>用途分類</label>
     <select id="formCategory">
       <option value="其他">其他</option>
       <option value="寫作">寫作</option>
@@ -147,6 +222,7 @@
       <option value="生活">生活</option>
       <option value="簡報">簡報</option>
       <option value="角色扮演">角色扮演</option>
+      <option value="自動化">自動化</option>
     </select>
     <label>標籤（用逗號分隔）</label>
     <input type="text" id="formTags" placeholder="例如：NotebookLM, 簡報, AI">
@@ -163,15 +239,14 @@
 
 <script>
 // ============================================================
-// ⚠️ 請把下面三行換成你自己的金鑰
+// ⚠️ 請把下面兩行換成你自己的 Supabase 金鑰
+// Claude API Key 會在使用時彈出視窗輸入，不需要寫在這裡
 // ============================================================
-const SUPABASE_URL = 'https://xuxkvlpjzqwgcqxbknsw.supabase.co';        // 例如 https://abcdefgh.supabase.co
-const SUPABASE_KEY = 'sb_publishable_OqLTc65lo0kXjjz6Kw186w_hJzbUrOv';    // 你的 anon key
+var SUPABASE_URL = 'YOUR_SUPABASE_URL';
+var SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 var CLAUDE_API_KEY = localStorage.getItem('claude_api_key') || '';
-	
-// 初始化 Supabase（用 db 避免與 CDN 的 window.supabase 衝突）
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var allPrompts = [];
 
 window.addEventListener('DOMContentLoaded', async function() {
@@ -191,14 +266,17 @@ async function loadPrompts() {
 function renderPrompts() {
   var keyword = document.getElementById('searchInput').value.toLowerCase();
   var catFilter = document.getElementById('categoryFilter').value;
+  var toolFilter = document.getElementById('toolFilter').value;
   var filtered = allPrompts.filter(function(p) {
     var matchKeyword = !keyword ||
       (p.title && p.title.toLowerCase().indexOf(keyword) >= 0) ||
       (p.content && p.content.toLowerCase().indexOf(keyword) >= 0) ||
       (p.tags && p.tags.some(function(t) { return t.toLowerCase().indexOf(keyword) >= 0; })) ||
+      (p.tool && p.tool.toLowerCase().indexOf(keyword) >= 0) ||
       (p.notes && p.notes.toLowerCase().indexOf(keyword) >= 0);
     var matchCat = !catFilter || p.category === catFilter;
-    return matchKeyword && matchCat;
+    var matchTool = !toolFilter || p.tool === toolFilter;
+    return matchKeyword && matchCat && matchTool;
   });
   var grid = document.getElementById('promptGrid');
   if (filtered.length === 0) {
@@ -211,10 +289,14 @@ function renderPrompts() {
     var p = filtered[i];
     var tagsHtml = '';
     if (p.tags) { for (var j = 0; j < p.tags.length; j++) { tagsHtml += '<span>' + escHtml(p.tags[j]) + '</span>'; } }
+    var toolBadge = p.tool ? '<div class="card-tool">🛠 ' + escHtml(p.tool) + '</div>' : '';
     html += '<div class="prompt-card">' +
       '<div class="card-header">' +
         '<div class="card-title">' + escHtml(p.title) + '</div>' +
-        '<div class="card-category">' + escHtml(p.category || '其他') + '</div>' +
+        '<div class="card-badges">' +
+          toolBadge +
+          '<div class="card-category">' + escHtml(p.category || '其他') + '</div>' +
+        '</div>' +
       '</div>' +
       '<div class="card-content">' + escHtml(p.content) + '</div>' +
       '<div class="card-tags">' + tagsHtml + '</div>' +
@@ -236,6 +318,8 @@ async function analyzeWithAI() {
   var content = document.getElementById('articleContent').value.trim();
   var title = document.getElementById('articleTitle').value.trim();
   var source = document.getElementById('articleSource').value.trim();
+  var tool = document.getElementById('articleTool').value;
+  var category = document.getElementById('articleCategory').value;
   if (!content) { showStatus('請先貼上文章內容！', 'error'); return; }
   if (content.length < 50) { showStatus('文章內容太短，至少需要 50 個字', 'error'); return; }
   if (!CLAUDE_API_KEY) {
@@ -259,11 +343,11 @@ async function analyzeWithAI() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-4-5-20241022',
         max_tokens: 4096,
         messages: [{
           role: 'user',
-          content: '請分析以下文章，找出所有「提示詞（Prompt）」。\n\n規則：\n1. 只提取文章中明確的提示詞/指令，不要提取作者的說明文字\n2. 每個提示詞保留原文，不要改寫\n3. 為每個提示詞分配分類：寫作/程式開發/行銷/分析/教育/翻譯/創意/商業/生活/簡報/角色扮演/其他\n4. 為每個提示詞產生 2-4 個標籤\n5. 如果文章中沒有提示詞，回傳空陣列\n\n請用 JSON 格式回覆，不要有其他文字：\n{"prompts":[{"title":"提示詞名稱","content":"完整提示詞內容","category":"分類","tags":["標籤1","標籤2"]}]}\n\n文章內容：\n' + textToAnalyze
+          content: '請分析以下文章，找出所有「提示詞（Prompt）」。\n\n規則：\n1. 只提取文章中明確的提示詞/指令，不要提取作者的說明文字\n2. 每個提示詞保留原文，不要改寫\n3. 為每個提示詞分配用途分類：寫作/程式開發/行銷/分析/教育/翻譯/創意/商業/生活/簡報/角色扮演/自動化/其他\n4. 為每個提示詞產生 2-4 個標籤\n5. 判斷這些提示詞適用於哪個 AI 工具（Gemini/Claude/ChatGPT/NotebookLM/Copilot/Perplexity/Grok/Midjourney/Stable Diffusion/Cursor/自動化/程式開發/其他）\n6. 如果文章中沒有提示詞，回傳空陣列\n\n請用 JSON 格式回覆，不要有其他文字：\n{"prompts":[{"title":"提示詞名稱","content":"完整提示詞內容","category":"用途分類","tool":"AI工具名稱","tags":["標籤1","標籤2"]}]}\n\n文章內容：\n' + textToAnalyze
         }]
       })
     });
@@ -293,13 +377,19 @@ async function analyzeWithAI() {
       var p = prompts[i];
       var tagsMeta = '';
       if (p.tags) { for (var j = 0; j < p.tags.length; j++) { tagsMeta += '<span>🏷️ ' + escHtml(p.tags[j]) + '</span>'; } }
+      var aiTool = tool || p.tool || '';
+      var aiCat = category || p.category || '其他';
       resultsHtml += '<div class="ai-result-card">' +
         '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">' +
           '<input type="checkbox" checked data-index="' + i + '" style="margin-top:4px;transform:scale(1.3)">' +
           '<div style="flex:1">' +
             '<h4>' + escHtml(p.title) + '</h4>' +
             '<pre>' + escHtml(p.content) + '</pre>' +
-            '<div class="meta"><span>📂 ' + escHtml(p.category) + '</span>' + tagsMeta + '</div>' +
+            '<div class="meta">' +
+              (aiTool ? '<span class="tool-badge">🛠 ' + escHtml(aiTool) + '</span>' : '') +
+              '<span>📂 ' + escHtml(aiCat) + '</span>' +
+              tagsMeta +
+            '</div>' +
           '</div>' +
         '</label>' +
       '</div>';
@@ -311,7 +401,8 @@ async function analyzeWithAI() {
       window._aiPrompts.push({
         title: prompts[i].title,
         content: prompts[i].content,
-        category: prompts[i].category,
+        category: category || prompts[i].category || '其他',
+        tool: tool || prompts[i].tool || '',
         tags: prompts[i].tags,
         source: source,
         notes: title ? '來自文章：' + title : ''
@@ -342,6 +433,7 @@ async function saveAIResults() {
       title: selected[i].title,
       content: selected[i].content,
       category: selected[i].category || '其他',
+      tool: selected[i].tool || '',
       tags: selected[i].tags || [],
       source: selected[i].source || '',
       notes: selected[i].notes || ''
@@ -356,6 +448,7 @@ async function saveAIResults() {
   document.getElementById('aiResults').innerHTML = '';
   document.getElementById('articleContent').value = '';
   document.getElementById('articleTitle').value = '';
+  document.getElementById('articleSource').value = '';
   window._aiPrompts = null;
   await loadPrompts();
 }
@@ -365,6 +458,7 @@ function openAddModal() {
   document.getElementById('editId').value = '';
   document.getElementById('formTitle').value = '';
   document.getElementById('formContent').value = '';
+  document.getElementById('formTool').value = '';
   document.getElementById('formCategory').value = '其他';
   document.getElementById('formTags').value = '';
   document.getElementById('formSource').value = '';
@@ -380,6 +474,7 @@ function openEditModal(id) {
   document.getElementById('editId').value = id;
   document.getElementById('formTitle').value = p.title;
   document.getElementById('formContent').value = p.content;
+  document.getElementById('formTool').value = p.tool || '';
   document.getElementById('formCategory').value = p.category || '其他';
   document.getElementById('formTags').value = (p.tags || []).join(', ');
   document.getElementById('formSource').value = p.source || '';
@@ -401,6 +496,7 @@ async function savePrompt() {
   var row = {
     title: title,
     content: content,
+    tool: document.getElementById('formTool').value,
     category: document.getElementById('formCategory').value,
     tags: tags,
     source: document.getElementById('formSource').value.trim(),
@@ -436,6 +532,12 @@ function copyContent(id) {
   });
 }
 
+function resetApiKey() {
+  localStorage.removeItem('claude_api_key');
+  CLAUDE_API_KEY = '';
+  showStatus('✅ API Key 已清除，下次分析時會重新詢問', 'success');
+}
+
 function exportJSON() {
   var blob = new Blob([JSON.stringify(allPrompts, null, 2)], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
@@ -458,6 +560,7 @@ async function importJSON(event) {
       rows.push({
         title: imported[i].title || '未命名',
         content: imported[i].content || '',
+        tool: imported[i].tool || '',
         category: imported[i].category || '其他',
         tags: Array.isArray(imported[i].tags) ? imported[i].tags : [],
         source: imported[i].source || '',
@@ -475,11 +578,11 @@ async function importJSON(event) {
 }
 
 function exportCSV() {
-  var header = '標題,內容,分類,標籤,來源,備註,建立時間\n';
+  var header = '標題,內容,AI工具,分類,標籤,來源,備註,建立時間\n';
   var rows = '';
   for (var i = 0; i < allPrompts.length; i++) {
     var p = allPrompts[i];
-    rows += '"' + csvEsc(p.title) + '","' + csvEsc(p.content) + '","' + csvEsc(p.category) + '","' + csvEsc((p.tags||[]).join('|')) + '","' + csvEsc(p.source) + '","' + csvEsc(p.notes) + '","' + p.created_at + '"\n';
+    rows += '"' + csvEsc(p.title) + '","' + csvEsc(p.content) + '","' + csvEsc(p.tool) + '","' + csvEsc(p.category) + '","' + csvEsc((p.tags||[]).join('|')) + '","' + csvEsc(p.source) + '","' + csvEsc(p.notes) + '","' + p.created_at + '"\n';
   }
   var bom = '\uFEFF';
   var blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8' });
