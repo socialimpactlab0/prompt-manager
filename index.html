@@ -71,8 +71,21 @@
   .modal textarea { height: 100px; resize: vertical; }
   .modal .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
   .tools-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-  .tools-bar .settings-btn { margin-left: auto; background: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .tools-bar .settings-btn { background: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
   .tools-bar .settings-btn:hover { background: #e2e8f0; }
+  /* 管理分類 Modal */
+  .manage-section { margin-bottom: 20px; }
+  .manage-section h4 { font-size: 15px; color: #4a5568; margin-bottom: 10px; }
+  .manage-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .manage-item { display: flex; align-items: center; gap: 4px; background: #edf2f7; padding: 4px 10px; border-radius: 16px; font-size: 13px; }
+  .manage-item.tool-item { background: #ebf4ff; color: #2b6cb0; }
+  .manage-item.cat-item { background: #f0e6ff; color: #6b46c1; }
+  .manage-item button { background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 14px; padding: 0 2px; font-weight: bold; }
+  .manage-item button:hover { color: #c53030; }
+  .manage-add { display: flex; gap: 8px; }
+  .manage-add input { flex: 1; border: 2px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+  .manage-add button { background: #48bb78; color: white; border: none; border-radius: 8px; padding: 6px 16px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .manage-add button:hover { background: #38a169; }
   @media (max-width: 600px) {
     .prompt-grid { grid-template-columns: 1fr; }
     .filter-bar { flex-direction: column; }
@@ -94,38 +107,8 @@
     <input type="text" id="articleTitle" placeholder="文章標題（選填）">
     <input type="text" id="articleSource" placeholder="來源網址（選填），例如 https://www.koc.com.tw/archives/630020">
     <div class="form-row">
-      <select id="articleTool">
-        <option value="">-- 選擇 AI 工具 --</option>
-        <option value="Gemini">Gemini</option>
-        <option value="Claude">Claude</option>
-        <option value="ChatGPT">ChatGPT</option>
-        <option value="NotebookLM">NotebookLM</option>
-        <option value="Copilot">Copilot</option>
-        <option value="Perplexity">Perplexity</option>
-        <option value="Grok">Grok</option>
-        <option value="Midjourney">Midjourney</option>
-        <option value="Stable Diffusion">Stable Diffusion</option>
-        <option value="Cursor">Cursor</option>
-        <option value="自動化">自動化</option>
-        <option value="程式開發">程式開發</option>
-        <option value="其他">其他</option>
-      </select>
-      <select id="articleCategory">
-        <option value="">-- 選擇用途分類 --</option>
-        <option value="寫作">寫作</option>
-        <option value="程式開發">程式開發</option>
-        <option value="行銷">行銷</option>
-        <option value="分析">分析</option>
-        <option value="教育">教育</option>
-        <option value="翻譯">翻譯</option>
-        <option value="創意">創意</option>
-        <option value="商業">商業</option>
-        <option value="生活">生活</option>
-        <option value="簡報">簡報</option>
-        <option value="角色扮演">角色扮演</option>
-        <option value="自動化">自動化</option>
-        <option value="其他">其他</option>
-      </select>
+      <select id="articleTool"></select>
+      <select id="articleCategory"></select>
     </div>
     <textarea id="articleContent" placeholder="把文章內容貼在這裡...&#10;&#10;步驟：&#10;1. 打開文章網頁&#10;2. Ctrl+A 全選文字&#10;3. Ctrl+C 複製&#10;4. 在這裡 Ctrl+V 貼上&#10;5. 按下「AI 分析提示詞」按鈕"></textarea>
     <div class="btn-row">
@@ -141,48 +124,21 @@
     <button class="btn btn-sm btn-outline" onclick="document.getElementById('importFile').click()">📥 匯入 JSON</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn btn-sm btn-outline" onclick="exportCSV()">📊 匯出 CSV</button>
+    <button class="settings-btn" onclick="openManageModal()">⚙️ 管理分類</button>
     <button class="settings-btn" onclick="resetApiKey()">🔑 重設 API Key</button>
   </div>
 
   <div class="filter-bar">
     <input type="text" id="searchInput" placeholder="🔍 搜尋標題、內容、標籤..." oninput="renderPrompts()">
-    <select id="toolFilter" onchange="renderPrompts()">
-      <option value="">全部工具</option>
-      <option value="Gemini">Gemini</option>
-      <option value="Claude">Claude</option>
-      <option value="ChatGPT">ChatGPT</option>
-      <option value="NotebookLM">NotebookLM</option>
-      <option value="Copilot">Copilot</option>
-      <option value="Perplexity">Perplexity</option>
-      <option value="Grok">Grok</option>
-      <option value="Midjourney">Midjourney</option>
-      <option value="Stable Diffusion">Stable Diffusion</option>
-      <option value="Cursor">Cursor</option>
-      <option value="自動化">自動化</option>
-      <option value="程式開發">程式開發</option>
-    </select>
-    <select id="categoryFilter" onchange="renderPrompts()">
-      <option value="">全部分類</option>
-      <option value="寫作">寫作</option>
-      <option value="程式開發">程式開發</option>
-      <option value="行銷">行銷</option>
-      <option value="分析">分析</option>
-      <option value="教育">教育</option>
-      <option value="翻譯">翻譯</option>
-      <option value="創意">創意</option>
-      <option value="商業">商業</option>
-      <option value="生活">生活</option>
-      <option value="簡報">簡報</option>
-      <option value="角色扮演">角色扮演</option>
-      <option value="自動化">自動化</option>
-      <option value="其他">其他</option>
-    </select>
+    <select id="toolFilter" onchange="renderPrompts()"></select>
+    <select id="categoryFilter" onchange="renderPrompts()"></select>
   </div>
 
   <div id="promptGrid" class="prompt-grid"></div>
   <div id="stats" class="stats"></div>
 </div>
 
+<!-- 新增/編輯 Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h3 id="modalTitle">新增提示詞</h3>
@@ -192,38 +148,9 @@
     <label>內容 *</label>
     <textarea id="formContent" placeholder="提示詞內容"></textarea>
     <label>AI 工具</label>
-    <select id="formTool">
-      <option value="">-- 選擇 AI 工具 --</option>
-      <option value="Gemini">Gemini</option>
-      <option value="Claude">Claude</option>
-      <option value="ChatGPT">ChatGPT</option>
-      <option value="NotebookLM">NotebookLM</option>
-      <option value="Copilot">Copilot</option>
-      <option value="Perplexity">Perplexity</option>
-      <option value="Grok">Grok</option>
-      <option value="Midjourney">Midjourney</option>
-      <option value="Stable Diffusion">Stable Diffusion</option>
-      <option value="Cursor">Cursor</option>
-      <option value="自動化">自動化</option>
-      <option value="程式開發">程式開發</option>
-      <option value="其他">其他</option>
-    </select>
+    <select id="formTool"></select>
     <label>用途分類</label>
-    <select id="formCategory">
-      <option value="其他">其他</option>
-      <option value="寫作">寫作</option>
-      <option value="程式開發">程式開發</option>
-      <option value="行銷">行銷</option>
-      <option value="分析">分析</option>
-      <option value="教育">教育</option>
-      <option value="翻譯">翻譯</option>
-      <option value="創意">創意</option>
-      <option value="商業">商業</option>
-      <option value="生活">生活</option>
-      <option value="簡報">簡報</option>
-      <option value="角色扮演">角色扮演</option>
-      <option value="自動化">自動化</option>
-    </select>
+    <select id="formCategory"></select>
     <label>標籤（用逗號分隔）</label>
     <input type="text" id="formTags" placeholder="例如：NotebookLM, 簡報, AI">
     <label>來源網址</label>
@@ -237,19 +164,198 @@
   </div>
 </div>
 
+<!-- 管理分類 Modal -->
+<div class="modal-overlay" id="manageModalOverlay" onclick="if(event.target===this)closeManageModal()">
+  <div class="modal">
+    <h3>⚙️ 管理分類選項</h3>
+
+    <div class="manage-section">
+      <h4>🛠 AI 工具</h4>
+      <div class="manage-list" id="toolList"></div>
+      <div class="manage-add">
+        <input type="text" id="newToolInput" placeholder="輸入新的 AI 工具名稱">
+        <button onclick="addTool()">＋ 新增</button>
+      </div>
+    </div>
+
+    <div class="manage-section">
+      <h4>📂 用途分類</h4>
+      <div class="manage-list" id="catList"></div>
+      <div class="manage-add">
+        <input type="text" id="newCatInput" placeholder="輸入新的分類名稱">
+        <button onclick="addCategory()">＋ 新增</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeManageModal()">完成</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // ⚠️ 請把下面兩行換成你自己的 Supabase 金鑰
-// Claude API Key 會在使用時彈出視窗輸入，不需要寫在這裡
 // ============================================================
-var SUPABASE_URL = 'YOUR_SUPABASE_URL';
-var SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+var SUPABASE_URL = 'https://xuxkvlpjzqwgcqxbknsw.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_OqLTc65lo0kXjjz6Kw186w_hJzbUrOv';
 var CLAUDE_API_KEY = localStorage.getItem('claude_api_key') || '';
 
 var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var allPrompts = [];
 
+// ============================================================
+// 可自訂的分類清單（存在 localStorage）
+// ============================================================
+var defaultTools = ['Gemini','Claude','ChatGPT','NotebookLM','Copilot','Perplexity','Grok','Midjourney','Stable Diffusion','Cursor','自動化','程式開發'];
+var defaultCategories = ['寫作','程式開發','行銷','分析','教育','翻譯','創意','商業','生活','簡報','角色扮演','自動化'];
+
+function getTools() {
+  var saved = localStorage.getItem('prompt_tools');
+  return saved ? JSON.parse(saved) : defaultTools.slice();
+}
+function setTools(list) {
+  localStorage.setItem('prompt_tools', JSON.stringify(list));
+}
+function getCategories() {
+  var saved = localStorage.getItem('prompt_categories');
+  return saved ? JSON.parse(saved) : defaultCategories.slice();
+}
+function setCategories(list) {
+  localStorage.setItem('prompt_categories', JSON.stringify(list));
+}
+
+// ============================================================
+// 動態產生所有下拉選單
+// ============================================================
+function refreshAllDropdowns() {
+  var tools = getTools();
+  var cats = getCategories();
+
+  // AI 工具選單
+  var toolSelects = ['articleTool','formTool'];
+  for (var s = 0; s < toolSelects.length; s++) {
+    var el = document.getElementById(toolSelects[s]);
+    if (!el) continue;
+    var val = el.value;
+    el.innerHTML = '<option value="">-- 選擇 AI 工具 --</option>';
+    for (var i = 0; i < tools.length; i++) {
+      el.innerHTML += '<option value="' + escHtml(tools[i]) + '">' + escHtml(tools[i]) + '</option>';
+    }
+    el.innerHTML += '<option value="其他">其他</option>';
+    el.value = val;
+  }
+
+  // 工具篩選器
+  var toolFilterEl = document.getElementById('toolFilter');
+  if (toolFilterEl) {
+    var val = toolFilterEl.value;
+    toolFilterEl.innerHTML = '<option value="">全部工具</option>';
+    for (var i = 0; i < tools.length; i++) {
+      toolFilterEl.innerHTML += '<option value="' + escHtml(tools[i]) + '">' + escHtml(tools[i]) + '</option>';
+    }
+    toolFilterEl.value = val;
+  }
+
+  // 用途分類選單
+  var catSelects = ['articleCategory','formCategory'];
+  for (var s = 0; s < catSelects.length; s++) {
+    var el = document.getElementById(catSelects[s]);
+    if (!el) continue;
+    var val = el.value;
+    el.innerHTML = '<option value="">-- 選擇用途分類 --</option>';
+    for (var i = 0; i < cats.length; i++) {
+      el.innerHTML += '<option value="' + escHtml(cats[i]) + '">' + escHtml(cats[i]) + '</option>';
+    }
+    el.innerHTML += '<option value="其他">其他</option>';
+    el.value = val;
+  }
+
+  // 分類篩選器
+  var catFilterEl = document.getElementById('categoryFilter');
+  if (catFilterEl) {
+    var val = catFilterEl.value;
+    catFilterEl.innerHTML = '<option value="">全部分類</option>';
+    for (var i = 0; i < cats.length; i++) {
+      catFilterEl.innerHTML += '<option value="' + escHtml(cats[i]) + '">' + escHtml(cats[i]) + '</option>';
+    }
+    catFilterEl.innerHTML += '<option value="其他">其他</option>';
+    catFilterEl.value = val;
+  }
+}
+
+// ============================================================
+// 管理分類 Modal
+// ============================================================
+function openManageModal() {
+  document.getElementById('manageModalOverlay').classList.add('active');
+  renderManageLists();
+}
+function closeManageModal() {
+  document.getElementById('manageModalOverlay').classList.remove('active');
+  refreshAllDropdowns();
+  renderPrompts();
+}
+function renderManageLists() {
+  var tools = getTools();
+  var cats = getCategories();
+  var toolHtml = '';
+  for (var i = 0; i < tools.length; i++) {
+    toolHtml += '<div class="manage-item tool-item">' + escHtml(tools[i]) +
+      ' <button onclick="removeTool(' + i + ')" title="刪除">✕</button></div>';
+  }
+  document.getElementById('toolList').innerHTML = toolHtml || '<span style="color:#a0aec0;font-size:13px">尚無項目</span>';
+  var catHtml = '';
+  for (var i = 0; i < cats.length; i++) {
+    catHtml += '<div class="manage-item cat-item">' + escHtml(cats[i]) +
+      ' <button onclick="removeCategory(' + i + ')" title="刪除">✕</button></div>';
+  }
+  document.getElementById('catList').innerHTML = catHtml || '<span style="color:#a0aec0;font-size:13px">尚無項目</span>';
+}
+function addTool() {
+  var input = document.getElementById('newToolInput');
+  var name = input.value.trim();
+  if (!name) return;
+  var tools = getTools();
+  if (tools.indexOf(name) >= 0) { alert('「' + name + '」已經存在'); return; }
+  tools.push(name);
+  setTools(tools);
+  input.value = '';
+  renderManageLists();
+}
+function removeTool(index) {
+  var tools = getTools();
+  var name = tools[index];
+  if (!confirm('確定要刪除「' + name + '」嗎？')) return;
+  tools.splice(index, 1);
+  setTools(tools);
+  renderManageLists();
+}
+function addCategory() {
+  var input = document.getElementById('newCatInput');
+  var name = input.value.trim();
+  if (!name) return;
+  var cats = getCategories();
+  if (cats.indexOf(name) >= 0) { alert('「' + name + '」已經存在'); return; }
+  cats.push(name);
+  setCategories(cats);
+  input.value = '';
+  renderManageLists();
+}
+function removeCategory(index) {
+  var cats = getCategories();
+  var name = cats[index];
+  if (!confirm('確定要刪除「' + name + '」嗎？')) return;
+  cats.splice(index, 1);
+  setCategories(cats);
+  renderManageLists();
+}
+
+// ============================================================
+// 頁面載入
+// ============================================================
 window.addEventListener('DOMContentLoaded', async function() {
+  refreshAllDropdowns();
   await loadPrompts();
 });
 
@@ -293,8 +399,7 @@ function renderPrompts() {
     html += '<div class="prompt-card">' +
       '<div class="card-header">' +
         '<div class="card-title">' + escHtml(p.title) + '</div>' +
-        '<div class="card-badges">' +
-          toolBadge +
+        '<div class="card-badges">' + toolBadge +
           '<div class="card-category">' + escHtml(p.category || '其他') + '</div>' +
         '</div>' +
       '</div>' +
@@ -333,6 +438,8 @@ async function analyzeWithAI() {
   btn.textContent = '⏳ AI 分析中...';
   showStatus('正在呼叫 AI 分析文章中的提示詞，請稍候約 10-20 秒...', 'loading');
   try {
+    var tools = getTools();
+    var cats = getCategories();
     var textToAnalyze = content.substring(0, 8000);
     var response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -347,7 +454,7 @@ async function analyzeWithAI() {
         max_tokens: 4096,
         messages: [{
           role: 'user',
-          content: '請分析以下文章，找出所有「提示詞（Prompt）」。\n\n規則：\n1. 只提取文章中明確的提示詞/指令，不要提取作者的說明文字\n2. 每個提示詞保留原文，不要改寫\n3. 為每個提示詞分配用途分類：寫作/程式開發/行銷/分析/教育/翻譯/創意/商業/生活/簡報/角色扮演/自動化/其他\n4. 為每個提示詞產生 2-4 個標籤\n5. 判斷這些提示詞適用於哪個 AI 工具（Gemini/Claude/ChatGPT/NotebookLM/Copilot/Perplexity/Grok/Midjourney/Stable Diffusion/Cursor/自動化/程式開發/其他）\n6. 如果文章中沒有提示詞，回傳空陣列\n\n請用 JSON 格式回覆，不要有其他文字：\n{"prompts":[{"title":"提示詞名稱","content":"完整提示詞內容","category":"用途分類","tool":"AI工具名稱","tags":["標籤1","標籤2"]}]}\n\n文章內容：\n' + textToAnalyze
+          content: '請分析以下文章，找出所有「提示詞（Prompt）」。\n\n規則：\n1. 只提取文章中明確的提示詞/指令，不要提取作者的說明文字\n2. 每個提示詞保留原文，不要改寫\n3. 為每個提示詞分配用途分類，從以下選擇：' + cats.join('/') + '/其他\n4. 為每個提示詞產生 2-4 個標籤\n5. 判斷這些提示詞適用於哪個 AI 工具，從以下選擇：' + tools.join('/') + '/其他\n6. 如果文章中沒有提示詞，回傳空陣列\n\n請用 JSON 格式回覆，不要有其他文字：\n{"prompts":[{"title":"提示詞名稱","content":"完整提示詞內容","category":"用途分類","tool":"AI工具名稱","tags":["標籤1","標籤2"]}]}\n\n文章內容：\n' + textToAnalyze
         }]
       })
     });
@@ -387,8 +494,7 @@ async function analyzeWithAI() {
             '<pre>' + escHtml(p.content) + '</pre>' +
             '<div class="meta">' +
               (aiTool ? '<span class="tool-badge">🛠 ' + escHtml(aiTool) + '</span>' : '') +
-              '<span>📂 ' + escHtml(aiCat) + '</span>' +
-              tagsMeta +
+              '<span>📂 ' + escHtml(aiCat) + '</span>' + tagsMeta +
             '</div>' +
           '</div>' +
         '</label>' +
@@ -399,12 +505,10 @@ async function analyzeWithAI() {
     window._aiPrompts = [];
     for (var i = 0; i < prompts.length; i++) {
       window._aiPrompts.push({
-        title: prompts[i].title,
-        content: prompts[i].content,
+        title: prompts[i].title, content: prompts[i].content,
         category: category || prompts[i].category || '其他',
         tool: tool || prompts[i].tool || '',
-        tags: prompts[i].tags,
-        source: source,
+        tags: prompts[i].tags, source: source,
         notes: title ? '來自文章：' + title : ''
       });
     }
@@ -421,29 +525,18 @@ async function saveAIResults() {
   var checkboxes = document.querySelectorAll('#aiResults input[type="checkbox"]');
   var selected = [];
   for (var i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i].checked) {
-      selected.push(window._aiPrompts[parseInt(checkboxes[i].dataset.index)]);
-    }
+    if (checkboxes[i].checked) selected.push(window._aiPrompts[parseInt(checkboxes[i].dataset.index)]);
   }
   if (selected.length === 0) { showStatus('請至少勾選一個提示詞', 'error'); return; }
   showStatus('正在儲存 ' + selected.length + ' 個提示詞...', 'loading');
   var rows = [];
   for (var i = 0; i < selected.length; i++) {
-    rows.push({
-      title: selected[i].title,
-      content: selected[i].content,
-      category: selected[i].category || '其他',
-      tool: selected[i].tool || '',
-      tags: selected[i].tags || [],
-      source: selected[i].source || '',
-      notes: selected[i].notes || ''
-    });
+    rows.push({ title: selected[i].title, content: selected[i].content,
+      category: selected[i].category || '其他', tool: selected[i].tool || '',
+      tags: selected[i].tags || [], source: selected[i].source || '', notes: selected[i].notes || '' });
   }
   var result = await db.from('prompts').insert(rows);
-  if (result.error) {
-    showStatus('儲存失敗：' + result.error.message, 'error');
-    return;
-  }
+  if (result.error) { showStatus('儲存失敗：' + result.error.message, 'error'); return; }
   showStatus('✅ 成功儲存 ' + selected.length + ' 個提示詞！', 'success');
   document.getElementById('aiResults').innerHTML = '';
   document.getElementById('articleContent').value = '';
@@ -459,7 +552,7 @@ function openAddModal() {
   document.getElementById('formTitle').value = '';
   document.getElementById('formContent').value = '';
   document.getElementById('formTool').value = '';
-  document.getElementById('formCategory').value = '其他';
+  document.getElementById('formCategory').value = '';
   document.getElementById('formTags').value = '';
   document.getElementById('formSource').value = '';
   document.getElementById('formNotes').value = '';
@@ -475,16 +568,14 @@ function openEditModal(id) {
   document.getElementById('formTitle').value = p.title;
   document.getElementById('formContent').value = p.content;
   document.getElementById('formTool').value = p.tool || '';
-  document.getElementById('formCategory').value = p.category || '其他';
+  document.getElementById('formCategory').value = p.category || '';
   document.getElementById('formTags').value = (p.tags || []).join(', ');
   document.getElementById('formSource').value = p.source || '';
   document.getElementById('formNotes').value = p.notes || '';
   document.getElementById('modalOverlay').classList.add('active');
 }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
 async function savePrompt() {
   var title = document.getElementById('formTitle').value.trim();
@@ -493,16 +584,12 @@ async function savePrompt() {
   var tagsRaw = document.getElementById('formTags').value.split(',');
   var tags = [];
   for (var i = 0; i < tagsRaw.length; i++) { var t = tagsRaw[i].trim(); if (t) tags.push(t); }
-  var row = {
-    title: title,
-    content: content,
+  var row = { title: title, content: content,
     tool: document.getElementById('formTool').value,
-    category: document.getElementById('formCategory').value,
-    tags: tags,
-    source: document.getElementById('formSource').value.trim(),
+    category: document.getElementById('formCategory').value || '其他',
+    tags: tags, source: document.getElementById('formSource').value.trim(),
     notes: document.getElementById('formNotes').value.trim(),
-    updated_at: new Date().toISOString()
-  };
+    updated_at: new Date().toISOString() };
   var editId = document.getElementById('editId').value;
   if (editId) {
     var result = await db.from('prompts').update(row).eq('id', parseInt(editId));
@@ -541,39 +628,29 @@ function resetApiKey() {
 function exportJSON() {
   var blob = new Blob([JSON.stringify(allPrompts, null, 2)], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
+  var a = document.createElement('a'); a.href = url;
   a.download = 'prompts-backup-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  a.click(); URL.revokeObjectURL(url);
 }
 
 async function importJSON(event) {
-  var file = event.target.files[0];
-  if (!file) return;
+  var file = event.target.files[0]; if (!file) return;
   try {
     var text = await file.text();
     var imported = JSON.parse(text);
     if (!Array.isArray(imported)) throw new Error('格式不正確');
     var rows = [];
     for (var i = 0; i < imported.length; i++) {
-      rows.push({
-        title: imported[i].title || '未命名',
-        content: imported[i].content || '',
-        tool: imported[i].tool || '',
-        category: imported[i].category || '其他',
+      rows.push({ title: imported[i].title || '未命名', content: imported[i].content || '',
+        tool: imported[i].tool || '', category: imported[i].category || '其他',
         tags: Array.isArray(imported[i].tags) ? imported[i].tags : [],
-        source: imported[i].source || '',
-        notes: imported[i].notes || ''
-      });
+        source: imported[i].source || '', notes: imported[i].notes || '' });
     }
     var result = await db.from('prompts').insert(rows);
     if (result.error) throw result.error;
     showStatus('✅ 成功匯入 ' + rows.length + ' 條提示詞！', 'success');
     await loadPrompts();
-  } catch (err) {
-    showStatus('匯入失敗：' + err.message, 'error');
-  }
+  } catch (err) { showStatus('匯入失敗：' + err.message, 'error'); }
   event.target.value = '';
 }
 
@@ -584,14 +661,10 @@ function exportCSV() {
     var p = allPrompts[i];
     rows += '"' + csvEsc(p.title) + '","' + csvEsc(p.content) + '","' + csvEsc(p.tool) + '","' + csvEsc(p.category) + '","' + csvEsc((p.tags||[]).join('|')) + '","' + csvEsc(p.source) + '","' + csvEsc(p.notes) + '","' + p.created_at + '"\n';
   }
-  var bom = '\uFEFF';
-  var blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
+  var blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url;
   a.download = 'prompts-' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  a.click(); URL.revokeObjectURL(url);
 }
 
 function escHtml(str) {
